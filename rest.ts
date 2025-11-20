@@ -36,7 +36,7 @@ export default function Rest({ owner, repo }: RestParams) {
 
     const firstLabel = productLabels[0];
     if (!firstLabel?.name) {
-      console.warn(`#${issue.number}: Missing label name - ${issue.html_url}`);
+      console.warn(`FAILED: ${issue.html_url}. No valid label found.`);
       return "failed";
     }
 
@@ -55,12 +55,12 @@ export default function Rest({ owner, repo }: RestParams) {
         },
       });
       console.log(
-        `#${issue.number}: Dispatched for ${firstLabel.name} - ${issue.html_url}`,
+        `DISPATCHED: ${issue.html_url}`,
       );
       return "triggered";
     } catch (error) {
       console.error(
-        `#${issue.number}: Failed to dispatch - ${issue.html_url}`,
+        `FAILED: ${issue.html_url}. Error: ${String(error)}`,
         error,
       );
       return "failed";
