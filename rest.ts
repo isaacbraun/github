@@ -1,5 +1,6 @@
 import { Octokit } from "@octokit/rest";
 import { type Endpoints } from "@octokit/types";
+import { sleep } from "bun";
 
 type IssuesList =
   Endpoints["GET /repos/{owner}/{repo}/issues"]["response"]["data"];
@@ -72,6 +73,7 @@ export default function Rest({ owner, repo }: RestParams) {
     state?: PaginateParams["state"];
     milestone?: PaginateParams["milestone"];
     per_page?: number;
+    sleepMs?: number;
     onlyFirstPage?: boolean;
   }
   async function iterateAllIssues({
@@ -79,6 +81,7 @@ export default function Rest({ owner, repo }: RestParams) {
     state = "open",
     milestone,
     per_page = 30,
+    sleepMs = 0,
     onlyFirstPage = false,
   }: IterateParams): Promise<void> {
     const counters = {
@@ -106,6 +109,9 @@ export default function Rest({ owner, repo }: RestParams) {
       }
 
       if (onlyFirstPage) break;
+
+      console.log(`Sleeping for ${sleepMs} ms before next page...`);
+      await sleep(sleepMs); // To avoid rate limiting
     }
     console.log(
       `\n --- Issues processed --- \n
