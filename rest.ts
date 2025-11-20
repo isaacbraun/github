@@ -8,7 +8,10 @@ type Issue = IssuesList[number];
 type Label = Exclude<Issue["labels"][number], string>;
 type PaginateParams =
   Endpoints["GET /repos/{owner}/{repo}/issues"]["parameters"];
-type ActionResponse = "triggered" | "skipped" | "failed";
+type ActionResponse = "total" | "triggered" | "skipped" | "failed";
+type ActionCounters = {
+  [Key in ActionResponse]: number;
+}
 
 interface RestParams {
   owner: string;
@@ -84,7 +87,7 @@ export default function Rest({ owner, repo }: RestParams) {
     sleepMs = 0,
     onlyFirstPage = false,
   }: IterateParams): Promise<void> {
-    const counters = {
+    const counters: ActionCounters = {
       total: 0,
       triggered: 0,
       skipped: 0,
