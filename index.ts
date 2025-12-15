@@ -4,8 +4,11 @@ const owner = "Esri";
 const repo = "calcite-design-system";
 const rest = Rest({ owner, repo });
 
-await rest.iterateAllIssues({
-  action: rest.syncEsriProductLabels,
-  per_page: 100,
-  sleepMs: 5000,
-});
+// await rest.iterateAllIssues({
+//   action: rest.syncEsriProductLabels,
+//   per_page: 100,
+//   sleepMs: 5000,
+// });
+
+const issue = await rest.getIssue(12940);
+await rest.syncAssignees(issue);

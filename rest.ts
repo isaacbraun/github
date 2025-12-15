@@ -11,7 +11,7 @@ type PaginateParams =
 type ActionResponse = "total" | "triggered" | "skipped" | "failed";
 type ActionCounters = {
   [Key in ActionResponse]: number;
-}
+};
 
 interface RestParams {
   owner: string;
@@ -23,6 +23,11 @@ export default function Rest({ owner, repo }: RestParams) {
     auth: process.env.GITHUB_TOKEN,
   });
 
+  /**
+   * Get all Esri Product Labels (color: #006B75) from an issue
+   * @param issue - The GitHub issue object
+   * @returns An array of Esri Product Labels or an empty array if none found
+   */
   function getProductLabels(issue: Issue): Label[] {
     return issue.labels.filter(
       (label): label is Label =>
@@ -30,19 +35,37 @@ export default function Rest({ owner, repo }: RestParams) {
     );
   }
 
+  /**
+   * Remove pull requests from a list of issues
+   * @param issues - An array of GitHub issues
+   * @returns An array of issues excluding pull requests
+   */
   function removePullRequests(issues: IssuesList): Issue[] {
     return issues.filter((issue) => !issue.pull_request);
   }
 
-  async function syncEsriProductLabels(issue: Issue): Promise<ActionResponse> {
-    const productLabels = getProductLabels(issue);
-    if (productLabels.length === 0) return "skipped";
-
-    const firstLabel = productLabels[0];
-    if (!firstLabel?.name) {
-      console.warn(`FAILED: ${issue.html_url}. No valid label found.`);
-      return "failed";
-    }
+  interface WorkflowInputs {
+    milestone_updated?: "true" | "false";
+    assignee_updated?: "true" | "false";
+    state_updated?: "open" | "closed";
+    label_name?: string;
+    label_color?: string | null;
+    label_action?: "added" | "removed";
+  }
+  /**
+   * Dispatch a GitHub Actions workflow for the given issue
+   * @param issue - The GitHub issue object
+   * @param inputs - The inputs for the workflow dispatch
+   * @returns ActionResponse indicating the result of the operation
+   */
+  async function dispatchMondayWorkflow(
+    issue: Issue,
+    inputs: WorkflowInputs,
+  ): Promise<ActionResponse> {
+    const defaultInputs = {
+      issue_number: issue.number.toString(),
+      event_type: "SyncActionChanges",
+    };
 
     try {
       await octokit.rest.actions.createWorkflowDispatch({
@@ -50,17 +73,9 @@ export default function Rest({ owner, repo }: RestParams) {
         repo,
         workflow_id: "issue-monday-sync.yml",
         ref: "dev",
-        inputs: {
-          issue_number: issue.number.toString(),
-          event_type: "SyncActionChanges",
-          label_name: firstLabel.name,
-          label_color: firstLabel.color,
-          label_action: "added",
-        },
+        inputs: { ...defaultInputs, ...inputs },
       });
-      console.log(
-        `DISPATCHED: ${issue.html_url}`,
-      );
+      console.log(`DISPATCHED: ${issue.html_url}`);
       return "triggered";
     } catch (error) {
       console.error(
@@ -71,6 +86,30 @@ export default function Rest({ owner, repo }: RestParams) {
     }
   }
 
+  /**
+   * Sync Esri Product Labels to Monday.com via GitHub Actions workflow dispatch
+   * @param issue - The GitHub issue object
+   * @returns ActionResponse indicating the result of the operation
+   */
+  async function syncEsriProductLabels(issue: Issue): Promise<ActionResponse> {
+    const productLabels = getProductLabels(issue);
+    if (productLabels.length === 0) return "skipped";
+
+    const firstLabel = productLabels[0];
+    if (!firstLabel?.name) {
+      console.warn(`FAILED: ${issue.html_url}. No valid label found.`);
+      return "failed";
+    }
+
+    const inputs: WorkflowInputs = {
+      label_name: firstLabel.name,
+      label_color: firstLabel.color,
+      label_action: "added",
+    };
+
+    return await dispatchMondayWorkflow(issue, inputs);
+  }
+
   interface IterateParams {
     action: (issue: Issue) => Promise<ActionResponse>;
     state?: PaginateParams["state"];
@@ -79,6 +118,9 @@ export default function Rest({ owner, repo }: RestParams) {
     sleepMs?: number;
     onlyFirstPage?: boolean;
   }
+  /**
+   * Iterate over all issues in the repository and perform the specified action
+   */
   async function iterateAllIssues({
     action,
     state = "open",
@@ -114,7 +156,7 @@ export default function Rest({ owner, repo }: RestParams) {
       if (onlyFirstPage) break;
 
       console.log(`Sleeping for ${sleepMs} ms before next page...`);
-      await sleep(sleepMs); // To avoid rate limiting
+      await sleep(sleepMs);
     }
     console.log(
       `\n --- Issues processed --- \n
@@ -125,8 +167,35 @@ export default function Rest({ owner, repo }: RestParams) {
     );
   }
 
+  /**
+   * Sync assignees to Monday.com via GitHub Actions workflow dispatch
+   * @param issue - The GitHub issue object
+   * @returns ActionResponse indicating the result of the operation
+   */
+  async function syncAssignees(issue: Issue): Promise<ActionResponse> {
+    if (issue?.assignees?.length === 0) return "skipped";
+
+    return await dispatchMondayWorkflow(issue, { assignee_updated: "true" });
+  }
+
+  /**
+   * Fetch a single issue by its number
+   * @param issue_number - The number of the issue to fetch
+   * @returns The GitHub issue object
+   */
+  async function getIssue(issue_number: number): Promise<Issue> {
+    const { data: issue } = await octokit.rest.issues.get({
+      owner,
+      repo,
+      issue_number,
+    });
+    return issue;
+  }
+
   return {
     octokit,
+    getIssue,
+    syncAssignees,
     getProductLabels,
     removePullRequests,
     syncEsriProductLabels,
