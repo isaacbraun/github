@@ -1,22 +1,16 @@
 import { Octokit } from "@octokit/rest";
-import { type Endpoints } from "@octokit/types";
 import { sleep } from "bun";
-
-type IssuesList =
-  Endpoints["GET /repos/{owner}/{repo}/issues"]["response"]["data"];
-type Issue = IssuesList[number];
-type Label = Exclude<Issue["labels"][number], string>;
-type PaginateParams =
-  Endpoints["GET /repos/{owner}/{repo}/issues"]["parameters"];
-type ActionResponse = "total" | "triggered" | "skipped" | "failed";
-type ActionCounters = {
-  [Key in ActionResponse]: number;
-};
-
-interface RestParams {
-  owner: string;
-  repo: string;
-}
+import type {
+  RestParams,
+  Issue,
+  Label,
+  IssuesList,
+  IterateParams,
+  ActionCounters,
+  WorkflowInputs,
+  ActionResponse,
+  PaginateParams,
+} from "./types";
 
 export default function Rest({ owner, repo }: RestParams) {
   const octokit = new Octokit({
@@ -44,14 +38,6 @@ export default function Rest({ owner, repo }: RestParams) {
     return issues.filter((issue) => !issue.pull_request);
   }
 
-  interface WorkflowInputs {
-    milestone_updated?: "true" | "false";
-    assignee_updated?: "true" | "false";
-    state_updated?: "open" | "closed";
-    label_name?: string;
-    label_color?: string | null;
-    label_action?: "added" | "removed";
-  }
   /**
    * Dispatch a GitHub Actions workflow for the given issue
    * @param issue - The GitHub issue object
@@ -110,14 +96,6 @@ export default function Rest({ owner, repo }: RestParams) {
     return await dispatchMondayWorkflow(issue, inputs);
   }
 
-  interface IterateParams {
-    action: (issue: Issue) => Promise<ActionResponse>;
-    state?: PaginateParams["state"];
-    milestone?: PaginateParams["milestone"];
-    per_page?: number;
-    sleepMs?: number;
-    onlyFirstPage?: boolean;
-  }
   /**
    * Iterate over all issues in the repository and perform the specified action
    */
@@ -125,6 +103,7 @@ export default function Rest({ owner, repo }: RestParams) {
     action,
     state = "open",
     milestone,
+    label_filter,
     per_page = 30,
     sleepMs = 0,
     onlyFirstPage = false,
@@ -139,6 +118,9 @@ export default function Rest({ owner, repo }: RestParams) {
     let iteratorOptions: PaginateParams = { owner, repo, per_page, state };
     if (milestone) {
       iteratorOptions = { ...iteratorOptions, milestone };
+    }
+    if (label_filter) {
+      iteratorOptions = { ...iteratorOptions, labels: label_filter };
     }
 
     for await (const page of octokit.paginate.iterator(
@@ -197,6 +179,7 @@ export default function Rest({ owner, repo }: RestParams) {
     getIssue,
     syncAssignees,
     getProductLabels,
+    dispatchMondayWorkflow,
     removePullRequests,
     syncEsriProductLabels,
     iterateAllIssues,
