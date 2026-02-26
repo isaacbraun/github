@@ -98,10 +98,21 @@ export default function Rest({ owner, repo }: RestParams) {
 
   /**
    * Iterate over all issues in the repository and perform the specified action
+   *
+   * @param action - Method to perform on each Issue, returns a promise of ActionResponse
+   * @param state - Filter issues by state: "open", "closed", or "all" (default: "open")
+   * @param assignee - Filter issues by assignee: Can be the name of a user, `"none"` for issues with no assigned user, and `"*"` for issues assigned to any user.
+   * @param milestone - Filter issues by milestone title
+   * @param label_filter - Filter issues that have all specified labels (comma-separated string?)
+   * @param per_page - Number of issues to fetch per page (default: 30)
+   * @param sleepMs - Milliseconds to sleep between page fetches (default: 0)
+   * @param onlyFirstPage - If true, only fetch and process the first page of results (default: false)
+   * @returns A promise that resolves when all issues have been processed
    */
   async function iterateAllIssues({
     action,
     state = "open",
+    assignee,
     milestone,
     label_filter,
     per_page = 30,
@@ -116,6 +127,9 @@ export default function Rest({ owner, repo }: RestParams) {
     };
 
     let iteratorOptions: PaginateParams = { owner, repo, per_page, state };
+    if (assignee) {
+      iteratorOptions = { ...iteratorOptions, assignee };
+    }
     if (milestone) {
       iteratorOptions = { ...iteratorOptions, milestone };
     }

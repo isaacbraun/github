@@ -28,6 +28,7 @@ export interface WorkflowInputs {
 export interface IterateParams {
   action: (issue: Issue) => Promise<ActionResponse>;
   state?: PaginateParams["state"];
+  assignee?: PaginateParams["assignee"];
   milestone?: PaginateParams["milestone"];
   label_filter?: PaginateParams["labels"];
   per_page?: number;
