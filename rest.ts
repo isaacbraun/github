@@ -102,6 +102,8 @@ export default function Rest({ owner, repo }: RestParams) {
       owner,
       repo,
       state: "open",
+      sort: "due_on",
+      direction: "asc",
     });
     return milestones;
   }
@@ -220,6 +222,7 @@ export default function Rest({ owner, repo }: RestParams) {
     octokit,
     getIssue,
     syncAssignees,
+    getMilestones,
     getProductLabels,
     dispatchMondayWorkflow,
     removePullRequests,
