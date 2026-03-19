@@ -10,6 +10,7 @@ import type {
   WorkflowInputs,
   ActionResponse,
   PaginateParams,
+  Milestone
 } from "./types";
 
 export default function Rest({ owner, repo }: RestParams) {
@@ -94,6 +95,33 @@ export default function Rest({ owner, repo }: RestParams) {
     };
 
     return await dispatchMondayWorkflow(issue, inputs);
+  }
+
+  async function getMilestones(): Promise<Milestone[]> {
+    const { data: milestones } = await octokit.rest.issues.listMilestones({
+      owner,
+      repo,
+      state: "open",
+    });
+    return milestones;
+  }
+
+  /**
+   * Fetch all issues from the repository with pagination
+   * @param params - Parameters for fetching issues, including pagination options
+   * @returns An array of GitHub issues
+   */
+  async function getAllIssues(params: PaginateParams): Promise<Issue[]> {
+    const issues: Issue[] = [];
+
+    for await (const page of octokit.paginate.iterator(
+      "GET /repos/{owner}/{repo}/issues",
+      { ...params, owner, repo },
+    )) {
+      issues.push(...removePullRequests(page.data));
+    }
+
+    return issues;
   }
 
   /**
@@ -196,6 +224,7 @@ export default function Rest({ owner, repo }: RestParams) {
     dispatchMondayWorkflow,
     removePullRequests,
     syncEsriProductLabels,
+    getAllIssues,
     iterateAllIssues,
   };
 }

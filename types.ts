@@ -10,6 +10,7 @@ export type ActionResponse = "total" | "triggered" | "skipped" | "failed";
 export type ActionCounters = {
   [Key in ActionResponse]: number;
 };
+export type Milestone = Endpoints["GET /repos/{owner}/{repo}/milestones"]["response"]["data"][number];
 
 export interface RestParams {
   owner: string;
