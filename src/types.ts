@@ -12,6 +12,12 @@ export type ActionCounters = {
 };
 export type Milestone = Endpoints["GET /repos/{owner}/{repo}/milestones"]["response"]["data"][number];
 
+export type Assignee = {
+  username: string;
+  firstName: string;
+  issueCount: number;
+};
+
 export interface RestParams {
   owner: string;
   repo: string;

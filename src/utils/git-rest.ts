@@ -1,5 +1,4 @@
 import { Octokit } from "@octokit/rest";
-import { sleep } from "bun";
 import type {
   RestParams,
   Issue,
@@ -11,9 +10,10 @@ import type {
   ActionResponse,
   PaginateParams,
   Milestone
-} from "./types";
+} from "../types";
 
-export default function Rest({ owner, repo }: RestParams) {
+export default function GitRest({ owner, repo }: RestParams) {
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN,
   });
