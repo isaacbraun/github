@@ -9,11 +9,12 @@ import type {
   WorkflowInputs,
   ActionResponse,
   PaginateParams,
-  Milestone
+  Milestone,
 } from "../types";
 
 export default function GitRest({ owner, repo }: RestParams) {
-  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
   const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN,
   });
@@ -35,8 +36,13 @@ export default function GitRest({ owner, repo }: RestParams) {
    * @param issues - An array of GitHub issues
    * @returns An array of issues excluding pull requests
    */
-  function removePullRequests(issues: IssuesList): Issue[] {
-    return issues.filter((issue) => !issue.pull_request);
+  function getIssueCategory(
+    issues: IssuesList,
+    category: IterateParams["category"],
+  ): Issue[] {
+    return issues.filter((issue) =>
+      category === "issue" ? !issue.pull_request : !!issue.pull_request,
+    );
   }
 
   /**
@@ -120,7 +126,7 @@ export default function GitRest({ owner, repo }: RestParams) {
       "GET /repos/{owner}/{repo}/issues",
       { ...params, owner, repo },
     )) {
-      issues.push(...removePullRequests(page.data));
+      issues.push(...getIssueCategory(page.data, "issue"));
     }
 
     return issues;
@@ -141,6 +147,7 @@ export default function GitRest({ owner, repo }: RestParams) {
    */
   async function iterateAllIssues({
     action,
+    category = "issue",
     state = "open",
     assignee,
     milestone,
@@ -171,7 +178,7 @@ export default function GitRest({ owner, repo }: RestParams) {
       "GET /repos/{owner}/{repo}/issues",
       iteratorOptions,
     )) {
-      const issues = removePullRequests(page.data);
+      const issues = getIssueCategory(page.data, category);
       counters.total += issues.length;
 
       for (const issue of issues) {
@@ -225,7 +232,7 @@ export default function GitRest({ owner, repo }: RestParams) {
     getMilestones,
     getProductLabels,
     dispatchMondayWorkflow,
-    removePullRequests,
+    removePullRequests: getIssueCategory,
     syncEsriProductLabels,
     getAllIssues,
     iterateAllIssues,

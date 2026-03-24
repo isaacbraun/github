@@ -10,7 +10,8 @@ export type ActionResponse = "total" | "triggered" | "skipped" | "failed";
 export type ActionCounters = {
   [Key in ActionResponse]: number;
 };
-export type Milestone = Endpoints["GET /repos/{owner}/{repo}/milestones"]["response"]["data"][number];
+export type Milestone =
+  Endpoints["GET /repos/{owner}/{repo}/milestones"]["response"]["data"][number];
 
 export type Assignee = {
   username: string;
@@ -34,6 +35,7 @@ export interface WorkflowInputs {
 
 export interface IterateParams {
   action: (issue: Issue) => Promise<ActionResponse>;
+  category?: "issue" | "pull_request";
   state?: PaginateParams["state"];
   assignee?: PaginateParams["assignee"];
   milestone?: PaginateParams["milestone"];
