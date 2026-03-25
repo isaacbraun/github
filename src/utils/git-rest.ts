@@ -21,7 +21,6 @@ export default function GitRest({ owner, repo }: RestParams) {
 
   /**
    * Get all Esri Product Labels (color: #006B75) from an issue
-   * @param issue - The GitHub issue object
    * @returns An array of Esri Product Labels or an empty array if none found
    */
   function getProductLabels(issue: Issue): Label[] {
@@ -33,7 +32,6 @@ export default function GitRest({ owner, repo }: RestParams) {
 
   /**
    * Remove pull requests from a list of issues
-   * @param issues - An array of GitHub issues
    * @returns An array of issues excluding pull requests
    */
   function getIssueCategory(
@@ -47,8 +45,6 @@ export default function GitRest({ owner, repo }: RestParams) {
 
   /**
    * Dispatch a GitHub Actions workflow for the given issue
-   * @param issue - The GitHub issue object
-   * @param inputs - The inputs for the workflow dispatch
    * @returns ActionResponse indicating the result of the operation
    */
   async function dispatchMondayWorkflow(
@@ -81,8 +77,6 @@ export default function GitRest({ owner, repo }: RestParams) {
 
   /**
    * Sync Esri Product Labels to Monday.com via GitHub Actions workflow dispatch
-   * @param issue - The GitHub issue object
-   * @returns ActionResponse indicating the result of the operation
    */
   async function syncEsriProductLabels(issue: Issue): Promise<ActionResponse> {
     const productLabels = getProductLabels(issue);
@@ -116,7 +110,6 @@ export default function GitRest({ owner, repo }: RestParams) {
 
   /**
    * Fetch all issues from the repository with pagination
-   * @param params - Parameters for fetching issues, including pagination options
    * @returns An array of GitHub issues
    */
   async function getAllIssues(params: PaginateParams): Promise<Issue[]> {
@@ -135,14 +128,6 @@ export default function GitRest({ owner, repo }: RestParams) {
   /**
    * Iterate over all issues in the repository and perform the specified action
    *
-   * @param action - Method to perform on each Issue, returns a promise of ActionResponse
-   * @param state - Filter issues by state: "open", "closed", or "all" (default: "open")
-   * @param assignee - Filter issues by assignee: Can be the name of a user, `"none"` for issues with no assigned user, and `"*"` for issues assigned to any user.
-   * @param milestone - Filter issues by milestone title
-   * @param label_filter - Filter issues that have all specified labels (comma-separated string?)
-   * @param per_page - Number of issues to fetch per page (default: 30)
-   * @param sleepMs - Milliseconds to sleep between page fetches (default: 0)
-   * @param onlyFirstPage - If true, only fetch and process the first page of results (default: false)
    * @returns A promise that resolves when all issues have been processed
    */
   async function iterateAllIssues({
@@ -188,8 +173,10 @@ export default function GitRest({ owner, repo }: RestParams) {
 
       if (onlyFirstPage) break;
 
-      console.log(`Sleeping for ${sleepMs} ms before next page...`);
-      await sleep(sleepMs);
+      if (sleepMs > 0) {
+        console.log(`Sleeping for ${sleepMs} ms before next page...`);
+        await sleep(sleepMs);
+      }
     }
     console.log(
       `\n --- Issues processed --- \n
