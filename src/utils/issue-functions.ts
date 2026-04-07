@@ -91,18 +91,5 @@ export async function processBlockingRelationships(issue: Issue, owner: string, 
     console.error(`Error updating issue #${issue_number}: ${error}`);
   }
 
-  // Add comment
-  try {
-    await octokit.rest.issues.createComment({
-      owner,
-      repo,
-      issue_number,
-      body: `All blocked issues from description have been added as relationships and removed from the description.\n\ncc ${productEngineers}`,
-    });
-    console.log(`Added comment to issue #${issue_number}.`);
-  } catch (error) {
-    console.error(`Error adding comment to issue #${issue_number}: ${error}`);
-  }
-
   return "triggered";
 }
