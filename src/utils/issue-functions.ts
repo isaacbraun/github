@@ -1,5 +1,6 @@
 import { Octokit } from "@octokit/rest";
 import type { ActionResponse, Issue } from "../types";
+import { teamGroups } from "../resources";
 
 export async function unrelatedMergedPrs(
   issue: Issue,
@@ -19,6 +20,7 @@ export async function unrelatedMergedPrs(
 }
 
 export async function processBlockingRelationships(issue: Issue, owner: string, repo: string): Promise<ActionResponse> {
+  const { group: {productEngineers} } = teamGroups;
   const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN,
   });
@@ -95,7 +97,7 @@ export async function processBlockingRelationships(issue: Issue, owner: string, 
       owner,
       repo,
       issue_number,
-      body: `All blocked issues from description have been added as relationships and removed from the description.\n\ncc @ditwanp`,
+      body: `All blocked issues from description have been added as relationships and removed from the description.\n\ncc ${productEngineers}`,
     });
     console.log(`Added comment to issue #${issue_number}.`);
   } catch (error) {
