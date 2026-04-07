@@ -1,0 +1,13 @@
+name: Monday.com Issue Sync
+on: [issue_dependencies]
+jobs:
+  log-payload:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Log Payload
+        run: |
+          echo "Payload: ${{ toJson(github.event) }}"
