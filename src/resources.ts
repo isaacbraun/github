@@ -19,3 +19,10 @@ export const teamMap: { username: string; firstName: string }[] = [
   { username: 'ryhoran', firstName: 'Ryan' },
   { username: 'SkyeSeitz', firstName: 'Skye' },
 ];
+
+export const teamGroups = {
+  group: {
+    designers: "@Esri/calcite-designers",
+    productEngineers: "@Esri/calcite-pes",
+  },
+}
