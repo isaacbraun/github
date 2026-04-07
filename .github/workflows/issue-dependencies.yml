@@ -1,5 +1,5 @@
 name: Monday.com Issue Sync
-on: [issue_dependencies]
+on: [issues]
 jobs:
   log-payload:
     runs-on: ubuntu-latest
