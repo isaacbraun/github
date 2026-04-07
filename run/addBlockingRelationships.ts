@@ -1,5 +1,5 @@
-import GitRest from "./src/utils/git-rest";
-import { processBlockingRelationships } from "./src/utils/issue-functions";
+import GitRest from "../src/utils/git-rest";
+import { processBlockingRelationships } from "../src/utils/issue-functions";
 
 const owner = "DitwanP";
 const repo = "action-testing";
