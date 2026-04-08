@@ -1,8 +1,8 @@
 import GitRest from "../src/utils/git-rest";
 import { processBlockingRelationships } from "../src/utils/issue-functions";
 
-const owner = "DitwanP";
-const repo = "action-testing";
+const owner = "Esri";
+const repo = "calcite-design-system";
 const gitRest = GitRest({ owner, repo });
 
 await gitRest.iterateAllIssues({
