@@ -8,3 +8,10 @@ For reading/writing issues and triggering workflows, the token needs the followi
 - Issues: Read and Write
 - Pull Requests: Read and Write
 - Metatadata: Read-only (required by token)
+
+# Team List Usage
+To create the list of Calcite team members with their open issues in the current milestone, run the following commands:
+
+```bash
+bun install && bun run team-list
+```
