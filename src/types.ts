@@ -37,6 +37,7 @@ export interface WorkflowInputs {
   label_name?: string;
   label_color?: string | null;
   label_action?: "added" | "removed";
+  refactor_pr?: "true" | "false";
 }
 
 export interface IterateParams {
