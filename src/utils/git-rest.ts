@@ -10,6 +10,7 @@ import type {
   ActionResponse,
   PaginateParams,
   Milestone,
+  WorkflowDispatchParams,
 } from "../types";
 
 export default function GitRest({ owner, repo }: RestParams) {
@@ -17,6 +18,7 @@ export default function GitRest({ owner, repo }: RestParams) {
     new Promise((resolve) => setTimeout(resolve, ms));
   const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN,
+    baseUrl: process.env.GITHUB_URL || undefined,
   });
 
   /**
@@ -47,10 +49,11 @@ export default function GitRest({ owner, repo }: RestParams) {
    * Dispatch a GitHub Actions workflow for the given issue
    * @returns ActionResponse indicating the result of the operation
    */
-  async function dispatchMondayWorkflow(
-    issue: Issue,
-    inputs: WorkflowInputs,
-  ): Promise<ActionResponse> {
+  async function dispatchMondayWorkflow({
+    issue,
+    ref = "dev",
+    inputs,
+  }: WorkflowDispatchParams): Promise<ActionResponse> {
     const defaultInputs = {
       issue_number: issue.number.toString(),
       event_type: "SyncActionChanges",
@@ -61,7 +64,7 @@ export default function GitRest({ owner, repo }: RestParams) {
         owner,
         repo,
         workflow_id: "issue-monday-sync.yml",
-        ref: "dev",
+        ref,
         inputs: { ...defaultInputs, ...inputs },
       });
       console.log(`DISPATCHED: ${issue.html_url}`);
@@ -94,7 +97,7 @@ export default function GitRest({ owner, repo }: RestParams) {
       label_action: "added",
     };
 
-    return await dispatchMondayWorkflow(issue, inputs);
+    return await dispatchMondayWorkflow({ issue, inputs });
   }
 
   async function getMilestones(): Promise<Milestone[]> {
@@ -195,7 +198,10 @@ export default function GitRest({ owner, repo }: RestParams) {
   async function syncAssignees(issue: Issue): Promise<ActionResponse> {
     if (issue?.assignees?.length === 0) return "skipped";
 
-    return await dispatchMondayWorkflow(issue, { assignee_updated: "true" });
+    return await dispatchMondayWorkflow({
+      issue,
+      inputs: { assignee_updated: "true" },
+    });
   }
 
   /**

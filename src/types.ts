@@ -29,6 +29,12 @@ export interface RestParams {
   repo: string;
 }
 
+export interface WorkflowDispatchParams {
+  issue: Issue;
+  ref?: string;
+  inputs: WorkflowInputs;
+}
+
 /** Inputs for Monday Sync Workflow */
 export interface WorkflowInputs {
   milestone_updated?: "true" | "false";
