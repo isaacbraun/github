@@ -13,9 +13,7 @@ await gitRest.iterateAllIssues({
   per_page: 100,
 });
 
-async function unrelatedMergedPrs(
-  issue: Issue,
-): Promise<ActionResponse> {
+async function unrelatedMergedPrs(issue: Issue): Promise<ActionResponse> {
   if (
     !issue.pull_request?.merged_at ||
     issue.pull_request?.merged_at <= new Date("2025-09-16").toISOString()
@@ -27,6 +25,9 @@ async function unrelatedMergedPrs(
     return "skipped";
   }
   // No related issue in body
-  gitRest.dispatchMondayWorkflow(issue, { refactor_pr: "true" });
+  gitRest.dispatchMondayWorkflow({
+    issue,
+    inputs: { refactor_pr: "true" },
+  });
   return "triggered";
 }

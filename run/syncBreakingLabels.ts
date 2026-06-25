@@ -17,9 +17,12 @@ async function findAndSyncLabel(label: string): Promise<void> {
 }
 
 async function syncLabel(issue: Issue, label: string): Promise<ActionResponse> {
-  gitRest.dispatchMondayWorkflow(issue, {
-    label_action: "added",
-    label_name: label,
+  gitRest.dispatchMondayWorkflow({
+    issue,
+    inputs: {
+      label_action: "added",
+      label_name: label,
+    },
   });
 
   return "triggered";
