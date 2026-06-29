@@ -1,6 +1,5 @@
 import { Octokit } from "@octokit/rest";
 import type { ActionResponse, Issue } from "../types";
-import { teamGroups, milestones } from "../resources";
 
 export async function processBlockingRelationships(issue: Issue, owner: string, repo: string): Promise<ActionResponse> {
   const octokit = new Octokit({
@@ -73,77 +72,5 @@ export async function processBlockingRelationships(issue: Issue, owner: string, 
     console.error(`Error updating issue #${issue_number}: ${error}`);
   }
 
-  return "triggered";
-}
-
-export async function processRemovingNeedsMilestoneLabel(issue: Issue, owner: string, repo: string): Promise<ActionResponse> {
-  const { backlog: {number: backlogMilestoneNumber} } = milestones;
-  const octokit = new Octokit({
-    auth: process.env.GITHUB_TOKEN,
-  });
-  const { labels, number: issue_number } = issue;
-  const needsMilestoneLabel = "needs milestone";
-
-  const hasNeedsMilestoneLabel = labels.some((label) => {
-    if (typeof label === "string") {
-      return label.toLowerCase() === needsMilestoneLabel.toLowerCase();
-    }
-    return label.name?.toLowerCase() === needsMilestoneLabel.toLowerCase();
-  });
-
-  if (!hasNeedsMilestoneLabel) {
-    console.log(`No "${needsMilestoneLabel}" label found in issue #${issue_number}. Skipping...`);
-    return "skipped";
-  }
-
-  // Remove the specified label from the issue
-  try {
-    await octokit.request(
-      "DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}",
-      {
-        owner,
-        repo,
-        issue_number,
-        name: needsMilestoneLabel.toLocaleLowerCase(),
-      }
-    );
-    console.log(`Removed label "${needsMilestoneLabel}" from issue #${issue_number}.`);
-  } catch (error) {
-    console.error(`Error removing label "${needsMilestoneLabel}" from issue #${issue_number}: ${error}`);
-  }
-
-  // Place in the "Backlog" milestone if it doesn't already have a milestone
-  await addMilestone(issue, owner, repo, backlogMilestoneNumber, false)
-
-  return "triggered";
-}
-
-export async function addMilestone(issue: Issue, owner: string, repo: string, milestoneToAdd: number, replaceExistingMilestone: boolean): Promise<ActionResponse> {
-  const octokit = new Octokit({
-    auth: process.env.GITHUB_TOKEN,
-  });
-  const { number: issue_number } = issue;
-
-  // Check if the issue already has a milestone
-  if (issue.milestone && !replaceExistingMilestone) {
-    console.log(`Issue #${issue_number} already has a milestone and replaceExistingMilestone is false. Skipping...`);
-    return "skipped";
-  }
-
-  // Add the specified milestone to the issue
-  try {
-    await octokit.request(
-      "PATCH /repos/{owner}/{repo}/issues/{issue_number}",
-      {
-        owner,
-        repo,
-        issue_number,
-        milestone: milestoneToAdd
-      }
-    );
-    console.log(`Added milestone "${milestoneToAdd}" to issue #${issue_number}.`);
-  } catch (error) {
-    console.error(`Error adding milestone "${milestoneToAdd}" to issue #${issue_number}: ${error}`);
-  }
   return "triggered";
 }
