@@ -1,6 +1,7 @@
 export const teamMap: { username: string; firstName: string }[] = [
   { username: 'ashetland', firstName: 'Aaron' },
   { username: 'aPreciado88', firstName: 'Abraham' },
+  { username: 'benelan', firstName: 'Ben' },
   { username: 'macandcheese', firstName: 'Adam' },
   { username: 'Amretasre002762670', firstName: 'Amreta' },
   { username: 'anveshmekala', firstName: 'Anvesh' },
