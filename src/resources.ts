@@ -27,3 +27,8 @@ export const teamGroups = {
     productEngineers: "@Esri/calcite-pes",
   },
 }
+
+export const milestones =  {
+  backlog: { name: "Backlog", number: 154 },
+  freezer: { name: "Freezer", number: 28 },
+}

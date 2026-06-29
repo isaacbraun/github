@@ -1,9 +1,7 @@
 import { Octokit } from "@octokit/rest";
 import type { ActionResponse, Issue } from "../types";
-import { teamGroups } from "../resources";
 
 export async function processBlockingRelationships(issue: Issue, owner: string, repo: string): Promise<ActionResponse> {
-  const { group: {productEngineers} } = teamGroups;
   const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN,
   });

@@ -112,6 +112,40 @@ export default function GitRest({ owner, repo }: RestParams) {
   }
 
   /**
+   * Add a milstone to an issue. 
+   * If the issue already has a milestone and replaceExistingMilestone is false, it will skip adding the milestone.
+   * @param issue - The GitHub issue object
+   * @param milestoneToAdd - The milestone number to add to the issue
+   * @param replaceExistingMilestone - Whether to replace an existing milestone if one exists
+   */
+  async function addMilestone(issue: Issue, milestoneToAdd: number, replaceExistingMilestone: boolean): Promise<ActionResponse> {
+  const { number: issue_number } = issue;
+
+  // Check if the issue already has a milestone
+  if (issue.milestone && !replaceExistingMilestone) {
+    console.log(`Issue #${issue_number} already has a milestone and replaceExistingMilestone is false. Skipping...`);
+    return "skipped";
+  }
+
+  // Add the specified milestone to the issue
+  try {
+    await octokit.request(
+      "PATCH /repos/{owner}/{repo}/issues/{issue_number}",
+      {
+        owner,
+        repo,
+        issue_number,
+        milestone: milestoneToAdd
+      }
+    );
+    console.log(`Added milestone "${milestoneToAdd}" to issue #${issue_number}.`);
+  } catch (error) {
+    console.error(`Error adding milestone "${milestoneToAdd}" to issue #${issue_number}: ${error}`);
+  }
+  return "triggered";
+}
+
+  /**
    * Fetch all issues from the repository with pagination
    * @returns An array of GitHub issues
    */
@@ -223,6 +257,7 @@ export default function GitRest({ owner, repo }: RestParams) {
     getIssue,
     syncAssignees,
     getMilestones,
+    addMilestone,
     getProductLabels,
     dispatchMondayWorkflow,
     removePullRequests: getIssueCategory,
