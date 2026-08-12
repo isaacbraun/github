@@ -1,8 +1,8 @@
 import { notifyTeams } from "./notify.ts";
-import * as core from "@actions/core";
 
 function assertRequired<T extends readonly unknown[]>(
   array: T,
+  core: import("github-script").AsyncFunctionArguments["core"],
   errorMessage?: string,
 ): { [K in keyof T]: NonNullable<T[K]> } {
   if (array.some((item) => item === undefined || item === null)) {
@@ -23,17 +23,16 @@ function assertRequired<T extends readonly unknown[]>(
  *
  * Used as the entry for the composite action.
  */
-async function run() {
+export default async function run(
+  core: import("github-script").AsyncFunctionArguments["core"],
+) {
   const { WEBHOOK_URI, MESSAGE_TITLE, MESSAGE_BODY, ACTION_TEXT, ACTION_URL } =
     process.env;
 
-  const [webhook_uri, title, body, action_text, action_url] = assertRequired([
-    WEBHOOK_URI,
-    MESSAGE_TITLE,
-    MESSAGE_BODY,
-    ACTION_TEXT,
-    ACTION_URL,
-  ]);
+  const [webhook_uri, title, body, action_text, action_url] = assertRequired(
+    [WEBHOOK_URI, MESSAGE_TITLE, MESSAGE_BODY, ACTION_TEXT, ACTION_URL],
+    core,
+  );
 
   const { error } = await notifyTeams({
     webhook_uri,
@@ -47,5 +46,3 @@ async function run() {
     core.setFailed(`Failed to send Teams notification. ${error}`);
   }
 }
-
-await run();
