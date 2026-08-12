@@ -12,6 +12,7 @@
     "@types/bun": "latest",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@types/github-script": "github:actions/github-script",
     "concurrently": "^9.2.1",
     "vite": "^8.0.2"
   },
@@ -19,7 +20,6 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@actions/core": "^3.0.1",
     "@octokit/rest": "^22.0.1",
     "@octokit/types": "^16.0.0",
     "@tanstack/react-query": "^5.95.2",

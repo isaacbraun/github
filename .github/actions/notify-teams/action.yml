@@ -22,13 +22,16 @@ runs:
   using: composite
   steps:
     - uses: actions/checkout@v6
-    - uses: actions/setup-node@v6
     - name: "Send Teams message"
-      shell: bash
+      uses: actions/github-script@v9
       env:
         WEBHOOK_URI: ${{ inputs.webhook_uri }}
         MESSAGE_TITLE: ${{ inputs.title }}
         MESSAGE_BODY: ${{ inputs.body }}
         ACTION_TEXT: ${{ inputs.action_text }}
         ACTION_URL: ${{ inputs.action_url }}
-      run: node .github/actions/notify-teams/run.ts
+      with:
+        script: |
+          const action = require('${{ github.workspace }}/.github/actions/notify-teams/run.ts')
+          await action(core)
+
