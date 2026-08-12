@@ -19,6 +19,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@actions/core": "^3.0.1",
     "@octokit/rest": "^22.0.1",
     "@octokit/types": "^16.0.0",
     "@tanstack/react-query": "^5.95.2",
