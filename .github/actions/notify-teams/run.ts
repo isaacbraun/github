@@ -23,23 +23,23 @@ function assertRequired<T extends readonly unknown[]>(
  *
  * Used as the entry for the composite action.
  */
-export default async function run(
+export async function run(
   core: import("github-script").AsyncFunctionArguments["core"],
 ) {
   const { WEBHOOK_URI, MESSAGE_TITLE, MESSAGE_BODY, ACTION_TEXT, ACTION_URL } =
     process.env;
 
-  const [webhook_uri, title, body, action_text, action_url] = assertRequired(
-    [WEBHOOK_URI, MESSAGE_TITLE, MESSAGE_BODY, ACTION_TEXT, ACTION_URL],
+  const [webhook_uri, title] = assertRequired(
+    [WEBHOOK_URI, MESSAGE_TITLE],
     core,
   );
 
   const { error } = await notifyTeams({
     webhook_uri,
     title,
-    body,
-    action_text,
-    action_url,
+    body: MESSAGE_BODY,
+    action_text: ACTION_TEXT,
+    action_url: ACTION_URL,
   });
 
   if (error) {
