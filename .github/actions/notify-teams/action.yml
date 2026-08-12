@@ -1,0 +1,34 @@
+name: Notify Teams Channel
+description: Sends an AdativeCard message to a Teams channel
+
+inputs:
+  webhook_uri:
+    description: The Teams webhook URI to send the message to
+    required: true
+  title:
+    description: The message title
+    required: true
+  body:
+    description: The message body
+    required: false
+  action_text:
+    description: The text for a clickable link action on the message card. Requires `action_url` to also be provided.
+    required: false
+  action_url:
+    description: The URL for the clickable link action on the message card. Requires `action_text` to also be provided.
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-node@v6
+    - name: "Send Teams message"
+      shell: bash
+      env:
+        WEBHOOK_URI: ${{ inputs.webhook_uri }}
+        MESSAGE_TITLE: ${{ inputs.title }}
+        MESSAGE_BODY: ${{ inputs.body }}
+        ACTION_TEXT: ${{ inputs.action_text }}
+        ACTION_URL: ${{ inputs.action_url }}
+      run: node .github/actions/notify-teams/run.ts

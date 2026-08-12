@@ -1,0 +1,22 @@
+name: Issue Notifications
+on:
+  issues:
+    types: [labeled]
+jobs:
+  determine-action:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: "Icon request notification"
+        if: github.event.label.name == 'calcite-ui-icons'
+        uses: ./.github/actions/notify-teams
+        with:
+          webhook_uri: ${{ secrets.TEAMS_ICON_WEBHOOK_URI }}
+          title: Icon Request - ${{ github.event.issue.number }}
+          body: ${{ github.event.issue.title }}
+          action_text: Open issue
+          action_url: ${{ github.event.issue.html_url }}
