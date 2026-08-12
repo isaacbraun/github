@@ -1,5 +1,5 @@
 name: Notify Teams Channel
-description: Sends an AdativeCard message to a Teams channel
+description: Sends an AdaptiveCard message to a Teams channel
 
 inputs:
   webhook_uri:
@@ -21,7 +21,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v6
     - name: "Send Teams message"
       uses: actions/github-script@v9
       env:
@@ -32,6 +31,6 @@ runs:
         ACTION_URL: ${{ inputs.action_url }}
       with:
         script: |
-          const action = require('${{ github.workspace }}/.github/actions/notify-teams/run.ts')
-          await action(core)
+          const { run } = require('${{ github.action_path }}/run.ts')
+          await run(core)
 
