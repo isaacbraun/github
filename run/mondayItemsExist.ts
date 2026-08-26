@@ -1,5 +1,6 @@
 import GitRest from "../src/utils/git-rest";
 import { type ActionResponse } from "../src/types";
+import { styleText } from "node:util";
 
 const owner = "Esri";
 const repo = "calcite-design-system";
@@ -28,8 +29,8 @@ async function queryForId(issueNumber: string): Promise<ActionResponse> {
       "Missing required environment variables. Please ensure MONDAY_KEY, MONDAY_BOARD, and MONDAY_ISSUE_NUMBER_COLUMN_ID are set.",
     );
     process.exit(1);
-  }  
-  
+  }
+
   const query = `query QueryForId($board_id: ID!, $column_id: String!, $column_values: [String!]!) {
       items_page_by_column_values(
         board_id: $board_id,
@@ -52,25 +53,38 @@ async function queryForId(issueNumber: string): Promise<ActionResponse> {
 
   const { response, error } = await runQuery(query, queryVariables);
   if (error) {
-    console.error(error);
+    console.error(styleText("red", error));
     return "failed";
   }
 
   const items = response?.data?.items_page_by_column_values?.items ?? [];
   if (items.length === 0) {
-    console.warn(`No Monday task found for Github Issue #${issueNumber}.`);
+    console.warn(
+      styleText(
+        "red",
+        `No Monday task found for Github Issue #${issueNumber}.`,
+      ),
+    );
     return "skipped";
   }
 
   if (items.length > 1) {
     console.error(
-      `Multiple Monday items found for Issue #${issueNumber}. Requires manual review.`,
+      styleText(
+        "red",
+        `Multiple Monday items found for Issue #${issueNumber}. Requires manual review.`,
+      ),
     );
     return "failed";
   }
 
   const [{ id }] = items;
-  console.log(`Found existing Monday task for Issue #${issueNumber}: ${id}.`);
+  console.log(
+    styleText(
+      "green",
+      `Found existing Monday task for Issue #${issueNumber}: ${id}.`,
+    ),
+  );
   return "triggered";
 }
 
